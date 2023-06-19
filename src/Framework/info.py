@@ -1,0 +1,6 @@
+SUCESS_SUBSCRIBE='ThreadPool and Strategys inited'
+ERROR_FRAMEWROK_INIT='Error while Trying to init framework'
+PAIRS_CREATED='Pairs Generated SUccessfully'
+APIRS_ERROR='Error executing pairs'
+REDUCE_COMPLETED='Reduction succesfully'
+REDUCE_ERROR='Errow whilr trying to reducee map'
