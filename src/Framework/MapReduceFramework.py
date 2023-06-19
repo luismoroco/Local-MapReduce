@@ -25,7 +25,8 @@ class MapReduceFramework(Map, Reduce):
     _pairs: List[Tuple[str, int]]
     _result: List[Tuple[str, int]]
 
-    def __init__(self, map: EmmiterTextCountMapper, reduce: TextCounterReducer, poolSize: int = multiprocessing.cpu_count()) -> None:
+    def __init__(self, map: EmmiterTextCountMapper, reduce: TextCounterReducer, 
+                 poolSize: int = multiprocessing.cpu_count()) -> None:
         try:
           self.poolSize = poolSize
           self._mapStategy = map
