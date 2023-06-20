@@ -16,44 +16,36 @@ documents = [
 ]
 
 class MapReduceFramework(Map, Reduce):
-    _mapStrategy: EmmiterTextCountMapper
+
+    _mapStategy: EmmiterTextCountMapper
     _reduceStrategy: TextCounterReducer
-    _lock: multiprocessing.Lock
-    _processes: List[multiprocessing.Process]
+    _pool: multiprocessing.Pool
     poolSize: int
     _pairs: List[Tuple[str, int]]
     _result: List[Tuple[str, int]]
+    _batches: any
 
-    def __init__(self, map: EmmiterTextCountMapper, reduce: TextCounterReducer,
+    def __init__(self, map: EmmiterTextCountMapper, reduce: TextCounterReducer, 
                  poolSize: int = multiprocessing.cpu_count()) -> None:
         try:
             self.poolSize = poolSize
-            self._mapStrategy = map
+            self._mapStategy = map
             self._reduceStrategy = reduce
-            self._lock = multiprocessing.Lock()
-            self._processes = []
+            self._pool = multiprocessing.Pool(processes=self.poolSize)
             self._pairs = []
 
             logg.info(SUCESS_SUBSCRIBE)
         except:
             logg.error(ERROR_FRAMEWROK_INIT)
             exit()
-
-    def regenerateProcesses(self) -> None:
-        self._processes = []
+    
+    def setBatches(self, batches: any) -> None:
+        self._batches = batches
 
     def map(self) -> None:
         try:
-            self.regenerateProcesses()
-
-            for doc in documents:
-                process = multiprocessing.Process(target=self._mapStrategy.execute, args=(doc, self._lock, self._pairs))
-                process.start()
-                self._processes.append(process)
-
-            for process in self._processes:
-                process.join()
-
+            results = self._pool.map(self._mapStategy.execute, self._batches)
+            self._pairs = [pair for sublist in results for pair in sublist]
             logg.info(PAIRS_CREATED)
         except:
             logg.error(APIRS_ERROR)
@@ -61,29 +53,15 @@ class MapReduceFramework(Map, Reduce):
 
     def reduce(self) -> None:
         try:
-            self.regenerateProcesses()
-
             grouped_pairs = {}
             for key, value in self._pairs:
                 if key not in grouped_pairs:
                     grouped_pairs[key] = []
                 grouped_pairs[key].append(value)
 
-            for key, values in grouped_pairs.items():
-                process = multiprocessing.Process(
-                    target=self._reduceStrategy.execute, args=(key, values, self._lock, self._pairs)
-                )
-                process.start()
-                self._processes.append(process)
+            reduced_pairs = self._pool.starmap(self._reduceStrategy.execute, grouped_pairs.items())
 
-            for process in self._processes:
-                process.join()
-
-            result = []
-            for key, value in self._pairs:
-                result.append((key, value))
-
-            self._result = result
+            self._result = reduced_pairs
             logg.info(REDUCE_COMPLETED)
         except:
             logg.error(REDUCE_ERROR)

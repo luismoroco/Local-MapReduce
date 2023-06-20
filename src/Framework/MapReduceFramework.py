@@ -7,6 +7,7 @@ import logging as logg
 from concurrent.futures import ThreadPoolExecutor
 import multiprocessing
 from typing import List, Tuple
+import gc
 
 from .info import SUCESS_SUBSCRIBE, ERROR_FRAMEWROK_INIT, PAIRS_CREATED, APIRS_ERROR, REDUCE_COMPLETED, REDUCE_ERROR
 
@@ -44,11 +45,11 @@ class MapReduceFramework(Map, Reduce):
     
     def map(self) -> None:
         try:
-          for doc in documents:
-            self._threadPool.submit(self._pairs.extend(self._mapStategy.execute(doc)))
-
+          self._pairs = [self._threadPool.submit(self._mapStategy.execute, doc) for doc in documents]
           self._threadPool.shutdown(wait=True)
+          
           logg.info(PAIRS_CREATED)
+          gc.collect()
         except:
           logg.error(APIRS_ERROR)
           exit()
@@ -62,6 +63,7 @@ class MapReduceFramework(Map, Reduce):
                 if key not in grouped_pairs:
                     grouped_pairs[key] = []
                 grouped_pairs[key].append(value)
+            gc.collect()
 
             reduced_pairs = []
             for key, values in grouped_pairs.items():
