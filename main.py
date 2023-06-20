@@ -34,7 +34,8 @@ def readBatches(file_list, batch_size, slice: int = 5):
     return batches
 
 fileList = getNameFiles(DATA_DIR)
-batches = readBatches(fileList, 4, 10)
+print(len(fileList))
+batches = readBatches(fileList, 4, 1000)
 
 mapReduce = MapReduceFramework(
    EmmiterTextCountMapper(), 
@@ -45,4 +46,4 @@ mapReduce.setBatches(batches)
 mapReduce.map()
 mapReduce.reduce()
 
-print(mapReduce.getResults())
+print(len(mapReduce.getResults()))
