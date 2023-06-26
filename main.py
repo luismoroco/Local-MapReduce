@@ -18,6 +18,7 @@ def getNameFiles(directory):
             file_path = os.path.join(root, file)
             vecFiles.append(file_path)
 
+    gc.collect()
     return vecFiles
 
 def readBatches(file_list, batch_size, slice: int = 5):
@@ -45,5 +46,6 @@ mapReduce = MapReduceFramework(
 mapReduce.setBatches(batches)
 mapReduce.map()
 mapReduce.reduce()
+gc.collect()
 
 print(len(mapReduce.getResults()))

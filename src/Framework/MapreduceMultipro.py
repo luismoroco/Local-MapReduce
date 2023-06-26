@@ -6,6 +6,7 @@ import time
 import logging as logg
 import multiprocessing
 from typing import List, Tuple
+import gc 
 
 from .info import SUCESS_SUBSCRIBE, ERROR_FRAMEWROK_INIT, PAIRS_CREATED, APIRS_ERROR, REDUCE_COMPLETED, REDUCE_ERROR
 
@@ -47,6 +48,7 @@ class MapReduceFramework(Map, Reduce):
             results = self._pool.map(self._mapStategy.execute, self._batches)
             self._pairs = [pair for sublist in results for pair in sublist]
             logg.info(PAIRS_CREATED)
+            gc.collect()
         except:
             logg.error(APIRS_ERROR)
             exit()
@@ -63,6 +65,7 @@ class MapReduceFramework(Map, Reduce):
 
             self._result = reduced_pairs
             logg.info(REDUCE_COMPLETED)
+            gc.collect()
         except:
             logg.error(REDUCE_ERROR)
             exit()

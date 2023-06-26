@@ -25,10 +25,10 @@ def get_files(directory):
         gc.collect()
     return file_list
 
-def read_batches(file_list, batch_size):
+def read_batches(file_list, batch_size, slice = 5):
     batches = []
 
-    file_list = file_list[:5]
+    file_list = file_list[:slice]
 
     for file_path in file_list:
         with open(file_path, 'r', encoding='latin-1') as file:
@@ -40,7 +40,8 @@ def read_batches(file_list, batch_size):
 
 def main():
     file_list = get_files(DATA_DIR)
-    batches = read_batches(file_list, 3)
+    print(len(file_list))
+    batches = read_batches(file_list, 3, 50)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
         intermediate_results = [executor.submit(map_function, batch) for batch in batches]
